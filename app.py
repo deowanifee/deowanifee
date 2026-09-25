@@ -48,7 +48,7 @@ def login():
     return render_template('login.html')
 
 @app.route('/dashboard', methods=['GET', 'POST'])
-def index():
+def dashboard():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
     
@@ -115,7 +115,7 @@ def index():
         installments[s_id].append({'receipt_no': inst[2], 'amount': inst[3], 'date': inst[4]})
 
     conn.close()
-    return render_template('index.html', students=students, installments=installments, selected_session=selected_session, search_query=search_query)
+    return render_template('deshboard.html', students=students, installments=installments, selected_session=selected_session, search_query=search_query)
 
 @app.route('/receipt/<int:student_id>')
 def receipt(student_id):
@@ -146,7 +146,7 @@ def delete_student(id):
     cursor.execute('DELETE FROM installments WHERE student_id = ?', (id,))
     conn.commit()
     conn.close()
-    return redirect(url_for('index'))
+    return redirect(url_for('dashboard'))
 
 @app.route('/logout')
 def logout():
