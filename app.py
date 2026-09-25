@@ -1,7 +1,8 @@
 import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, session
+import os
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='.')
 app.secret_key = 'your_secret_key_here'
 
 def init_db():
@@ -54,7 +55,7 @@ def login():
     cursor = conn.cursor()
     cursor.execute("SELECT password FROM admin_settings WHERE id = 1")
     row = cursor.fetchone()
-    db_pass = row[0] if row else 'admin'
+    db_pass = row[0] if row and row[0] else 'admin'
     conn.close()
 
     if request.method == 'POST':
@@ -63,7 +64,7 @@ def login():
             session['logged_in'] = True
             return redirect(url_for('dashboard'))
         else:
-            return render_template('login.html', error="गलत पासवर्ड!")
+            return render_template('login.html', error="गलत पासवर्ड! कृपया सही पासवर्ड डालें।")
     return render_template('login.html')
 
 @app.route('/dashboard', methods=['GET', 'POST'])
