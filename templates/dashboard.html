@@ -2,134 +2,151 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>श्री देववाणी विद्या मन्दिर - Dashboard</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
-        .header { background: #004085; color: white; padding: 15px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
-        .card { background: white; padding: 20px; margin-top: 20px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; align-items: end; }
-        .form-group { display: flex; flex-direction: column; }
-        label { font-weight: bold; margin-bottom: 5px; font-size: 14px; }
-        input, select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-        button { background: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #218838; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; font-size: 14px; }
-        th { background: #343a40; color: white; }
-        .btn-danger { background: #dc3545; padding: 5px 10px; text-decoration: none; color: white; border-radius: 3px; }
-        .btn-primary { background: #007bff; padding: 5px 10px; text-decoration: none; color: white; border-radius: 3px; }
-        .search-box { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>श्री देववाणी विद्या मन्दिर, पातालश्वर, छिंदवाड़ा (म.प्र.)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-
-    <div class="header">
-        <h2>श्री देववाणी विद्या मन्दिर, पातालश्वर, छिंदवाड़ा (म.प्र.)</h2>
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-primary px-3">
+        <span class="navbar-brand mb-0 h1">श्री देववाणी विद्या मन्दिर, पातालश्वर, छिंदवाड़ा (म.प्र.)</span>
         <div>
-            <span>स्वागत है, <b>{{ username }}</b></span> | 
-            <a href="/change-credentials" style="color: yellow; text-decoration: none; margin-left: 10px;">पासवर्ड बदलें</a> | 
-            <a href="/logout" style="color: #ffcccc; text-decoration: none; margin-left: 10px;">लॉग आउट</a>
+            <span class="text-white me-3">स्वागत है, Arvind Kumar Sahu</span>
+            <a href="/logout" class="btn btn-danger btn-sm">लॉग आउट</a>
         </div>
-    </div>
+    </nav>
 
-    <!-- Session Filter & Search Bar -->
-    <div class="card">
-        <form method="GET" action="/dashboard" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
-            <div class="form-group">
-                <label>शैक्षणिक सत्र चुनें:</label>
-                <select name="filter_session">
-                    {% for s in session_list %}
-                        <option value="{{ s }}" {% if s == current_session %}selected{% endif %}>{{ s }}</option>
-                    {% endfor %}
+    <div class="container-fluid py-4">
+        <form method="GET" class="row g-3 mb-4 bg-white p-3 rounded shadow-sm">
+            <div class="col-md-3">
+                <label class="form-label">शैक्षणिक सत्र चुनें:</label>
+                <select name="session_year" class="form-select">
+                    <option value="2025-2026" {% if selected_session == '2025-2026' %}selected{% endif %}>2025-2026</option>
+                    <option value="2026-2027" {% if selected_session == '2026-2027' %}selected{% endif %}>2026-2027</option>
                 </select>
             </div>
-            <div class="form-group" style="flex-grow: 1;">
-                <label>छात्र खोजें (Student Name Search):</label>
-                <input type="text" name="search_query" value="{{ search_query }}" placeholder="छात्र का नाम लिखकर खोजें...">
+            <div class="col-md-6">
+                <label class="form-label">छात्र खोजें (Student Name Search):</label>
+                <input type="text" name="search" class="form-control" value="{{ search_query }}" placeholder="छात्र का नाम लिखकर खोजें...">
             </div>
-            <div class="form-group">
-                <button type="submit" style="background: #007bff;">खोजें / फिल्टर करें</button>
-                {% if search_query %}
-                <a href="/dashboard?filter_session={{ current_session }}" style="margin-top: 5px; text-align: center; font-size: 12px; color: #dc3545; text-decoration: none;">सर्च हटाएं</a>
-                {% endif %}
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">खोजें / फ़िल्टर करें</button>
             </div>
         </form>
-    </div>
 
-    <!-- Add Fee Record Form -->
-    <div class="card">
-        <h3>➕ नया फीस रिकॉर्ड / किस्त जोड़ें (सत्र: {{ current_session }})</h3>
-        <form method="POST">
-            <input type="hidden" name="session_year" value="{{ current_session }}">
-            <div class="form-group">
-                <label>छात्र का नाम (Student Name):</label>
-                <input type="text" name="student_name" required placeholder="पूरा नाम लिखें">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-success text-white">➕ नया फीस रिकॉर्ड / पहली किस्त जोड़ें (सत्र: {{ selected_session }})</div>
+            <div class="card-body">
+                <form method="POST" class="row g-3">
+                    <input type="hidden" name="action" value="add_student">
+                    <div class="col-md-3">
+                        <label class="form-label">छात्र का नाम:</label>
+                        <input type="text" name="name" class="form-control" required placeholder="पूरा नाम लिखें">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">कक्षा:</label>
+                        <input type="text" name="student_class" class="form-control" required placeholder="कक्षा">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">कुल फीस (₹):</label>
+                        <input type="number" step="any" name="total_fee" class="form-control" required placeholder="कुल फीस">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">प्रथम जमा राशि (₹):</label>
+                        <input type="number" step="any" name="paid_amount" class="form-control" placeholder="जमा राशि">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">रसीद क्रमांक:</label>
+                        <input type="text" name="receipt_no" class="form-control" placeholder="रसीद नंबर">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">छूट (₹):</label>
+                        <input type="number" step="any" name="discount" class="form-control" value="0">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">मोबाइल नंबर:</label>
+                        <input type="text" name="mobile" class="form-control" placeholder="अभिभावक का मोबाइल">
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-success w-100">फीस सेव करें</button>
+                    </div>
+                </form>
             </div>
-            <div class="form-group">
-                <label>कक्षा (Class):</label>
-                <input type="text" name="class_name" required placeholder="कक्षा लिखें">
-            </div>
-            <div class="form-group">
-                <label>कुल फीस (Total Fee ₹):</label>
-                <input type="number" step="0.01" name="total_fee" required placeholder="कुल निर्धारित फीस">
-            </div>
-            <div class="form-group">
-                <label>जमा राशि (Paid Amount ₹):</label>
-                <input type="number" step="0.01" name="amount_paid" required placeholder="अभी जमा राशि">
-            </div>
-            <div class="form-group">
-                <label>छूट / रियायत (Discount ₹):</label>
-                <input type="number" step="0.01" name="discount" value="0" placeholder="माफ की गई राशि">
-            </div>
-            <div class="form-group">
-                <label>अभिभावक का मोबाइल नंबर:</label>
-                <input type="text" name="parent_mobile" placeholder="मोबाइल नंबर">
-            </div>
-            <div class="form-group">
-                <button type="submit">फीस सेव करें</button>
-            </div>
-        </form>
-    </div>
+        </div>
 
-    <!-- Records Table -->
-    <div class="card">
-        <h3>📋 फीस रिकॉर्ड सूची (सत्र: {{ current_session }}) {% if search_query %} - खोज परिणाम: "{{ search_query }}"{% endif %}</h3>
-        <table>
-            <tr>
-                <th>रसीद क्र.</th>
-                <th>छात्र का नाम</th>
-                <th>कक्षा</th>
-                <th>कुल फीस</th>
-                <th>जमा राशि</th>
-                <th>छूट</th>
-                <th>शेष बकाया</th>
-                <th>मोबाइल नंबर</th>
-                <th>दिनांक</th>
-                <th>कार्रवाई</th>
-            </tr>
-            {% for r in records %}
-            <tr>
-                <td>{{ r[0] }}</td>
-                <td><b>{{ r[1] }}</b></td>
-                <td>{{ r[2] }}</td>
-                <td>₹{{ r[4] }}</td>
-                <td style="color: green; font-weight: bold;">₹{{ r[5] }}</td>
-                <td style="color: orange;">₹{{ r[6] }}</td>
-                <td style="color: red; font-weight: bold;">₹{{ r[7] }}</td>
-                <td>{{ r[8] }}</td>
-                <td>{{ r[9] }}</td>
-                <td>
-                    <a href="/promote/{{ r[0] }}" class="btn-primary" onclick="return confirm('क्या आप इस छात्र को अगले सत्र में प्रमोट करना चाहते हैं?')">अगले सत्र में भेजें</a>
-                    <a href="/delete/{{ r[0] }}" class="btn-danger" onclick="return confirm('क्या आप वाकई इस रिकॉर्ड को हटाना चाहते हैं?')" style="margin-left: 5px;">हटाएं</a>
-                </td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="10" style="color: #777;">कोई रिकॉर्ड नहीं मिला।</td>
-            </tr>
-            {% endfor %}
-        </table>
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">📋 फीस रिकॉर्ड सूची (सत्र: {{ selected_session }})</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped mb-0 align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>रसीद इतिहास / प्रिंट</th>
+                                <th>छात्र का नाम</th>
+                                <th>कक्षा</th>
+                                <th>कुल फीस</th>
+                                <th>कुल जमा</th>
+                                <th>छूट</th>
+                                <th>शेष बकाया</th>
+                                <th>मोबाइल नंबर</th>
+                                <th>अगली किस्त जोड़ें</th>
+                                <th>कार्रवाई</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            {% set total_paid = student[4] %}
+                            {% set discount = student[5] %}
+                            {% set balance = student[3] - total_paid - discount %}
+                            <tr>
+                                <td style="min-width: 220px;">
+                                    <a href="/receipt/{{ student[0] }}" target="_blank" class="btn btn-info btn-sm mb-2 w-100 fw-bold">🖨️ रसीद देखें / प्रिंट करें</a>
+                                    <small class="fw-bold text-primary">भुगतान इतिहास:</small>
+                                    <ul class="list-unstyled small mb-0">
+                                        {% if student[0] in installments %}
+                                            {% for inst in installments[student[0]] %}
+                                                <li>🧾 <b>{{ inst.receipt_no }}</b>: ₹{{ inst.amount }} <span class="text-muted">({{ inst.date }})</span></li>
+                                            {% endfor %}
+                                        {% else %}
+                                            <li>कोई रसीद नहीं</li>
+                                        {% endif %}
+                                    </ul>
+                                </td>
+                                <td class="fw-bold">{{ student[1] }}</td>
+                                <td class="text-center">{{ student[2] }}</td>
+                                <td>₹{{ student[3] }}</td>
+                                <td class="text-success fw-bold">₹{{ total_paid }}</td>
+                                <td>₹{{ discount }}</td>
+                                <td class="text-danger fw-bold">₹{{ balance }}</td>
+                                <td>{{ student[6] }}</td>
+                                <td>
+                                    <form method="POST" class="row g-1">
+                                        <input type="hidden" name="action" value="add_installment">
+                                        <input type="hidden" name="student_id" value="{{ student[0] }}">
+                                        <div class="col-12">
+                                            <input type="text" name="receipt_no" class="form-control form-control-sm mb-1" placeholder="रसीद नं." required>
+                                        </div>
+                                        <div class="col-8">
+                                            <input type="number" step="any" name="installment_amount" class="form-control form-control-sm" placeholder="राशि ₹" required>
+                                        </div>
+                                        <div class="col-4">
+                                            <button type="submit" class="btn btn-warning btn-sm w-100 fw-bold">+</button>
+                                        </div>
+                                    </form>
+                                </td>
+                                <td>
+                                    <a href="/delete/{{ student[0] }}" class="btn btn-danger btn-sm" onclick="return confirm('क्या आप वाकई इस रिकॉर्ड को हटाना चाहते हैं?')">हटाएं</a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="10" class="text-center py-4 text-muted">कोई रिकॉर्ड नहीं मिला।</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
-
 </body>
 </html>
