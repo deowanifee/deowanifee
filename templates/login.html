@@ -9,7 +9,7 @@
     <div class="card p-4 shadow" style="width: 100%; max-width: 400px;">
         <h4 class="text-center text-primary mb-1">श्री देववाणी विद्या मन्दिर</h4>
         <p class="text-center text-muted small mb-3">पातालश्वर, छिंदवाड़ा (म.प्र.)</p>
-
+        
         {% if error %}
             <div class="alert alert-danger p-2 small">{{ error }}</div>
         {% endif %}
@@ -17,11 +17,11 @@
         <form method="POST">
             <div class="mb-3">
                 <label class="form-label">Username</label>
-                <input type="text" name="username" class="form-control" required placeholder="Arvind Kumar Sahu">
+                <input type="text" name="username" class="form-control" required placeholder="">
             </div>
             <div class="mb-3">
                 <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" required placeholder="J8109363681">
+                <input type="password" name="password" class="form-control" required placeholder="">
             </div>
             <button type="submit" class="btn btn-primary w-100">Login</button>
         </form>
