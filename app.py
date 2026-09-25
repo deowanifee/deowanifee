@@ -42,7 +42,7 @@ def login():
         password = request.form['password']
         if username == 'Arvind Kumar Sahu' and password == 'J810936381':
             session['logged_in'] = True
-            return redirect(url_for('index'))
+            return redirect(url_for('dashboard'))
         else:
             return render_template('login.html', error='गलत यूजरनेम या पासवर्ड!')
     return render_template('login.html')
