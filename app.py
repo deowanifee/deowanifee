@@ -1,44 +1,35 @@
 from flask import Flask, render_template, request, redirect, url_for, session
 import sqlite3
 from datetime import datetime
-import os
 
 app = Flask(__name__)
-app.secret_key = 'devvani_vidya_mandir_secure_cloud_key_2026'
+app.secret_key = 'devvani_secret_key'
 
 def init_db():
     conn = sqlite3.connect('devvani_school.db')
     cursor = conn.cursor()
-    
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
+        CREATE TABLE IF NOT EXISTS students (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE,
-            password TEXT,
-            master_pin TEXT
+            name TEXT NOT NULL,
+            student_class TEXT NOT NULL,
+            total_fee REAL NOT NULL,
+            paid_amount REAL DEFAULT 0,
+            discount REAL DEFAULT 0,
+            mobile TEXT,
+            session_year TEXT
         )
     ''')
-    
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS fee_records (
+        CREATE TABLE IF NOT EXISTS installments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            student_name TEXT,
-            class_name TEXT,
-            session_year TEXT,
-            total_fee REAL,
-            amount_paid REAL,
-            discount REAL,
-            due_amount REAL,
-            parent_mobile TEXT,
-            payment_date TEXT
+            student_id INTEGER,
+            receipt_no TEXT,
+            amount REAL,
+            date TEXT,
+            FOREIGN KEY (student_id) REFERENCES students (id)
         )
     ''')
-    
-    cursor.execute('''
-        INSERT OR IGNORE INTO users (id, username, password, master_pin) 
-        VALUES (1, 'Arvind Kumar Sahu', 'J8109363681', '615971')
-    ''')
-    
     conn.commit()
     conn.close()
 
@@ -46,145 +37,116 @@ init_db()
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
-    error = None
     if request.method == 'POST':
-        user = request.form['username']
-        pwd = request.form['password']
-        
-        conn = sqlite3.connect('devvani_school.db')
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE username = ? AND password = ?", (user, pwd))
-        account = cursor.fetchone()
-        conn.close()
-        
-        if account:
+        username = request.form['username']
+        password = request.form['password']
+        if username == 'Arvind Kumar Sahu' and password == '7810936381':
             session['logged_in'] = True
-            session['username'] = user
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('index'))
         else:
-            error = "गलत यूज़रनेम या पासवर्ड! कृपया पुनः प्रयास करें।"
-            
-    return render_template('login.html', error=error)
+            return render_template('login.html', error='गलत यूजरनेम या पासवर्ड!')
+    return render_template('login.html')
 
 @app.route('/dashboard', methods=['GET', 'POST'])
-def dashboard():
+def index():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-        
+    
     conn = sqlite3.connect('devvani_school.db')
     cursor = conn.cursor()
     
-    if request.method == 'POST':
-        name = request.form['student_name'].strip()
-        cls = request.form['class_name']
-        session_year = request.form['session_year']
-        total_fee = float(request.form['total_fee'] or 0)
-        paid = float(request.form['amount_paid'] or 0)
-        discount = float(request.form['discount'] or 0)
-        
-        final_due = total_fee - paid - discount
-        if final_due < 0:
-            final_due = 0
-            
-        mobile = request.form['parent_mobile']
-        date_today = datetime.now().strftime("%d-%m-%Y %H:%M")
-        
-        cursor.execute('''
-            INSERT INTO fee_records (student_name, class_name, session_year, total_fee, amount_paid, discount, due_amount, parent_mobile, payment_date)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (name, cls, session_year, total_fee, paid, discount, final_due, mobile, date_today))
-        conn.commit()
-    
-    session_list = [f"{year}-{year+1}" for year in range(2020, 2041)]
-    filter_session = request.args.get('filter_session', '2025-2026')
-    search_query = request.args.get('search_query', '').strip()
-    
-    # यदि सर्च किया गया है तो छात्र के नाम से खोजें, अन्यथा सत्र के हिसाब से दिखाएं
-    if search_query:
-        cursor.execute("SELECT * FROM fee_records WHERE student_name LIKE ? AND session_year = ? ORDER BY id DESC", ('%' + search_query + '%', filter_session))
-    else:
-        cursor.execute("SELECT * FROM fee_records WHERE session_year = ? ORDER BY id DESC", (filter_session,))
-        
-    records = cursor.fetchall()
-    
-    conn.close()
-    return render_template('dashboard.html', records=records, current_session=filter_session, session_list=session_list, username=session.get('username'), search_query=search_query)
+    selected_session = request.args.get('session_year', '2025-2026')
+    search_query = request.args.get('search', '')
 
-@app.route('/promote/<int:rec_id>')
-def promote_student(rec_id):
+    if request.method == 'POST':
+        action = request.form.get('action')
+        
+        if action == 'add_student':
+            name = request.form['name']
+            student_class = request.form['student_class']
+            total_fee = float(request.form['total_fee'])
+            paid_amount = float(request.form['paid_amount']) if request.form['paid_amount'] else 0
+            discount = float(request.form['discount']) if request.form['discount'] else 0
+            mobile = request.form['mobile']
+            receipt_no = request.form['receipt_no']
+            
+            cursor.execute('''
+                INSERT INTO students (name, student_class, total_fee, paid_amount, discount, mobile, session_year)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (name, student_class, total_fee, paid_amount, discount, mobile, selected_session))
+            
+            student_id = cursor.lastrowid
+            if paid_amount > 0:
+                current_date = datetime.now().strftime('%d-%m-%Y %H:%M')
+                cursor.execute('''
+                    INSERT INTO installments (student_id, receipt_no, amount, date)
+                    VALUES (?, ?, ?, ?)
+                ''', (student_id, receipt_no, paid_amount, current_date))
+                
+            conn.commit()
+
+        elif action == 'add_installment':
+            student_id = request.form['student_id']
+            amount = float(request.form['installment_amount'])
+            receipt_no = request.form['receipt_no']
+            current_date = datetime.now().strftime('%d-%m-%Y %H:%M')
+            
+            cursor.execute('UPDATE students SET paid_amount = paid_amount + ? WHERE id = ?', (amount, student_id))
+            cursor.execute('''
+                INSERT INTO installments (student_id, receipt_no, amount, date)
+                VALUES (?, ?, ?, ?)
+            ''', (student_id, receipt_no, amount, current_date))
+            conn.commit()
+
+    if search_query:
+        cursor.execute("SELECT * FROM students WHERE session_year = ? AND name LIKE ? ORDER BY id DESC", (selected_session, f"%{search_query}%"))
+    else:
+        cursor.execute("SELECT * FROM students WHERE session_year = ? ORDER BY id DESC", (selected_session,))
+        
+    students = cursor.fetchall()
+    
+    cursor.execute("SELECT * FROM installments")
+    installments_raw = cursor.fetchall()
+    installments = {}
+    for inst in installments_raw:
+        s_id = inst[1]
+        if s_id not in installments:
+            installments[s_id] = []
+        installments[s_id].append({'receipt_no': inst[2], 'amount': inst[3], 'date': inst[4]})
+
+    conn.close()
+    return render_template('index.html', students=students, installments=installments, selected_session=selected_session, search_query=search_query)
+
+@app.route('/receipt/<int:student_id>')
+def receipt(student_id):
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-        
+    
     conn = sqlite3.connect('devvani_school.db')
     cursor = conn.cursor()
-    
-    cursor.execute("SELECT student_name, class_name, session_year, due_amount, parent_mobile FROM fee_records WHERE id = ?", (rec_id,))
+    cursor.execute("SELECT * FROM students WHERE id = ?", (student_id,))
     student = cursor.fetchone()
     
-    if student:
-        name, cls, current_sess, previous_due, mobile = student
-        
-        try:
-            start_yr = int(current_sess.split('-')[0])
-            next_sess = f"{start_yr+1}-{start_yr+2}"
-        except:
-            next_sess = current_sess
-            
-        date_today = datetime.now().strftime("%d-%m-%Y %H:%M")
-        
-        cursor.execute('''
-            INSERT INTO fee_records (student_name, class_name, session_year, total_fee, amount_paid, discount, due_amount, parent_mobile, payment_date)
-            VALUES (?, ?, ?, ?, 0, 0, ?, ?, ?)
-        ''', (name, cls, next_sess, previous_due, previous_due, mobile, date_today))
-        conn.commit()
-        
+    cursor.execute("SELECT * FROM installments WHERE student_id = ?", (student_id,))
+    installments = cursor.fetchall()
     conn.close()
-    return redirect(url_for('dashboard'))
+    
+    if not student:
+        return "छात्र नहीं मिला!"
+        
+    return render_template('receipt.html', student=student, installments=installments)
 
-@app.route('/delete/<int:rec_id>')
-def delete_record(rec_id):
+@app.route('/delete/<int:id>')
+def delete_student(id):
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-        
     conn = sqlite3.connect('devvani_school.db')
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM fee_records WHERE id = ?", (rec_id,))
+    cursor.execute('DELETE FROM students WHERE id = ?', (id,))
+    cursor.execute('DELETE FROM installments WHERE student_id = ?', (id,))
     conn.commit()
     conn.close()
-    
-    return redirect(url_for('dashboard'))
-
-@app.route('/change-credentials', methods=['GET', 'POST'])
-def change_credentials():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
-        
-    msg = None
-    error = None
-    
-    if request.method == 'POST':
-        new_user = request.form['new_username']
-        new_pwd = request.form['new_password']
-        entered_pin = request.form['master_pin']
-        
-        conn = sqlite3.connect('devvani_school.db')
-        cursor = conn.cursor()
-        
-        cursor.execute("SELECT master_pin FROM users WHERE id = 1")
-        row = cursor.fetchone()
-        actual_pin = row[0]
-        
-        if entered_pin != actual_pin:
-            error = "गलत मास्टर पिन (Master PIN)! आप बदलाव नहीं कर सकते।"
-        else:
-            cursor.execute("UPDATE users SET username = ?, password = ? WHERE id = 1", (new_user, new_pwd))
-            conn.commit()
-            msg = "यूज़रनेम और पासवर्ड सफलतापूर्वक बदल दिए गए हैं!"
-            session['username'] = new_user
-            
-        conn.close()
-        
-    return render_template('change_credentials.html', msg=msg, error=error, username=session.get('username'))
+    return redirect(url_for('index'))
 
 @app.route('/logout')
 def logout():
@@ -192,5 +154,4 @@ def logout():
     return redirect(url_for('login'))
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(debug=True)
