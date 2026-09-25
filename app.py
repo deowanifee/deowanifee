@@ -38,10 +38,11 @@ init_db()
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
+        username = request.form['username'].strip().lower().replace(" ", "")
         password = request.form['password']
-        # यहाँ आपका 'J' वाला पासवर्ड सेट कर दिया गया है
-        if username == 'Arvind Kumar Sahu' and password == 'J7810936381':
+        if username == 'arvindkumarsahu' and password == '7810936381':
+
+
             session['logged_in'] = True
             return redirect(url_for('dashboard'))
         else:
