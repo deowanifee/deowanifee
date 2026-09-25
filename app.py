@@ -37,6 +37,8 @@ def init_db():
             reports_password TEXT
         )
     ''')
+    
+    # नए कॉलम सुरक्षित रूप से जोड़ें ताकि पुराना डेटा खराब न हो
     try:
         cursor.execute("ALTER TABLE admin_settings ADD COLUMN reports_password TEXT")
     except:
@@ -49,9 +51,17 @@ def init_db():
     cursor.execute("SELECT * FROM admin_settings WHERE id = 1")
     row = cursor.fetchone()
     if not row:
+        # अगर डेटाबेस बिल्कुल खाली है तभी डिफ़ॉल्ट 'admin' बनाएगा
         cursor.execute("INSERT INTO admin_settings (id, password, master_pin, reports_password) VALUES (1, 'admin', '615971', '799')")
     else:
-        cursor.execute("UPDATE admin_settings SET password = 'admin', master_pin = '615971', reports_password = '799' WHERE id = 1")
+        # यहाँ आपका पुराना पासवर्ड बिल्कुल सुरक्षित रहेगा, उसे बदला नहीं जाएगा। 
+        # केवल मास्टर पिन और रिपोर्ट्स पासवर्ड सेट/अपडेट होंगे अगर वे खाली हैं।
+        cursor.execute("""
+            UPDATE admin_settings 
+            SET master_pin = COALESCE(master_pin, '615971'), 
+                reports_password = COALESCE(reports_password, '799') 
+            WHERE id = 1
+        """)
         
     conn.commit()
     conn.close()
@@ -176,7 +186,7 @@ def reports():
     cursor = conn.cursor()
     cursor.execute("SELECT reports_password FROM admin_settings WHERE id = 1")
     row = cursor.fetchone()
-    correct_reports_pass = row[0] if row else '799'
+    correct_reports_pass = row[0] if row and row[0] else '799'
     
     if session.get('reports_unlocked') != True:
         if request.method == 'POST':
