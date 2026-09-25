@@ -155,8 +155,7 @@
                                 <td>
                                     <a href="/delete/{{ student[0] }}" class="btn btn-danger btn-sm" onclick="return confirm('क्या आप वाकई इस रिकॉर्ड को हटाना चाहते हैं?')">हटाएं</a>
                                 </td>
-                                <form method="POST" style="margin-top: 5px;">
-    <input type="hidden" name="action" value="promote_student">
+                                <form action="/promote" method="POST" style="margin-top: 5px;">
     <input type="hidden" name="student_id" value="{{ student[0] }}">
     <input type="text" name="next_class" placeholder="अगली कक्षा" class="form-control form-control-sm mb-1" required>
     <button type="submit" class="btn btn-warning btn-sm w-100">प्रमोट करें</button>
