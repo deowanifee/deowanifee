@@ -98,11 +98,6 @@ def dashboard():
                 VALUES (?, ?, ?, ?)
             ''', (student_id, receipt_no, amount, current_date))
             conn.commit()
-     elif action == 'promote_student':
-            student_id = request.form['student_id']
-            next_class = request.form['next_class']
-            cursor.execute("UPDATE students SET student_class = ? WHERE id = ?", (next_class, student_id))
-            conn.commit()
 
     if search_query:
         cursor.execute("SELECT * FROM students WHERE session_year = ? AND name LIKE ? ORDER BY id DESC", (selected_session, f"%{search_query}%"))
@@ -150,6 +145,18 @@ def delete_student(id):
     cursor = conn.cursor()
     cursor.execute('DELETE FROM students WHERE id = ?', (id,))
     cursor.execute('DELETE FROM installments WHERE student_id = ?', (id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('dashboard'))
+@app.route('/promote', methods=['POST'])
+def promote_student():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    conn = sqlite3.connect('devvani_school.db')
+    cursor = conn.cursor()
+    student_id = request.form['student_id']
+    next_class = request.form['next_class']
+    cursor.execute("UPDATE students SET student_class = ? WHERE id = ?", (next_class, student_id))
     conn.commit()
     conn.close()
     return redirect(url_for('dashboard'))
