@@ -1,8 +1,7 @@
 import sqlite3
 from flask import Flask, render_template, request, redirect, url_for, session
-import os
 
-app = Flask(__name__, template_folder='.')
+app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'
 
 def init_db():
@@ -38,6 +37,11 @@ def init_db():
             reports_password TEXT
         )
     ''')
+    try:
+        cursor.execute("ALTER TABLE admin_settings ADD COLUMN reports_password TEXT")
+    except:
+        pass
+
     cursor.execute("SELECT * FROM admin_settings WHERE id = 1")
     row = cursor.fetchone()
     if not row:
