@@ -98,7 +98,7 @@ def dashboard():
                 VALUES (?, ?, ?, ?)
             ''', (student_id, receipt_no, amount, current_date))
             conn.commit()
-              elif action == 'promote_student':
+     elif action == 'promote_student':
             student_id = request.form['student_id']
             next_class = request.form['next_class']
             cursor.execute("UPDATE students SET student_class = ? WHERE id = ?", (next_class, student_id))
