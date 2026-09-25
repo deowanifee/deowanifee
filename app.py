@@ -40,7 +40,8 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        if username == 'Arvind Kumar Sahu' and password == 'J810936381':
+        # यहाँ आपका 'J' वाला पासवर्ड सेट कर दिया गया है
+        if username == 'Arvind Kumar Sahu' and password == 'J7810936381':
             session['logged_in'] = True
             return redirect(url_for('dashboard'))
         else:
@@ -115,7 +116,7 @@ def dashboard():
         installments[s_id].append({'receipt_no': inst[2], 'amount': inst[3], 'date': inst[4]})
 
     conn.close()
-    return render_template('deshboard.html', students=students, installments=installments, selected_session=selected_session, search_query=search_query)
+    return render_template('dashboard.html', students=students, installments=installments, selected_session=selected_session, search_query=search_query)
 
 @app.route('/receipt/<int:student_id>')
 def receipt(student_id):
