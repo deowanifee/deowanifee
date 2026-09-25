@@ -41,13 +41,18 @@ def init_db():
         cursor.execute("ALTER TABLE admin_settings ADD COLUMN reports_password TEXT")
     except:
         pass
+    try:
+        cursor.execute("ALTER TABLE admin_settings ADD COLUMN master_pin TEXT")
+    except:
+        pass
 
     cursor.execute("SELECT * FROM admin_settings WHERE id = 1")
     row = cursor.fetchone()
     if not row:
         cursor.execute("INSERT INTO admin_settings (id, password, master_pin, reports_password) VALUES (1, 'admin', '615971', '799')")
     else:
-        cursor.execute("UPDATE admin_settings SET reports_password = '799' WHERE id = 1")
+        cursor.execute("UPDATE admin_settings SET password = 'admin', master_pin = '615971', reports_password = '799' WHERE id = 1")
+        
     conn.commit()
     conn.close()
 
