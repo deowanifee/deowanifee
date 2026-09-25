@@ -98,6 +98,11 @@ def dashboard():
                 VALUES (?, ?, ?, ?)
             ''', (student_id, receipt_no, amount, current_date))
             conn.commit()
+              elif action == 'promote_student':
+            student_id = request.form['student_id']
+            next_class = request.form['next_class']
+            cursor.execute("UPDATE students SET student_class = ? WHERE id = ?", (next_class, student_id))
+            conn.commit()
 
     if search_query:
         cursor.execute("SELECT * FROM students WHERE session_year = ? AND name LIKE ? ORDER BY id DESC", (selected_session, f"%{search_query}%"))
