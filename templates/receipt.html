@@ -7,19 +7,19 @@
     <style>
         body { background: #fff; font-family: sans-serif; }
         .receipt-box { max-width: 650px; margin: 30px auto; border: 2px solid #333; padding: 25px; border-radius: 8px; }
-        .school-logo-receipt { width: 70px; height: 70px; object-fit: cover; border-radius: 50%; }
+        .school-logo-receipt { width: 70px; height: 70px; object-fit: cover; border-radius: 50%; border: 1px solid #ccc; }
         @media print { .no-print { display: none !important; } }
     </style>
 </head>
 <body>
     <div class="receipt-box shadow-sm">
-        <!-- रसीद का शीर्ष (स्कूल का नाम, लोगो और मैनुअल रसीद नंबर) -->
+        <!-- रसीद का शीर्ष (स्कूल का नाम, सही लोगो और सत्र) -->
         <div class="d-flex align-items-center justify-content-between border-bottom pb-3 mb-3">
             <div>
-                <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="school-logo-receipt bg-light border" onerror="this.style.display='none'">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="school-logo-receipt bg-light" onerror="this.style.display='none'">
             </div>
-            <div class="text-center flex-grow-1">
-                <h4 class="fw-bold mb-0 text-primary">श्री देववाणी विद्या मन्दिर, पतालेश्वर, छिंदवाड़ा</h4>
+            <div class="text-center flex-grow-1 px-2">
+                <h4 class="fw-bold mb-0 text-primary" style="font-size: 20px;">श्री देववाणी विद्या मन्दिर, पतालेश्वर, छिंदवाड़ा</h4>
                 <p class="mb-0 text-muted small">विद्या ददाति विनयम | फीस भुगतान रसीद</p>
             </div>
             <div class="text-end">
@@ -28,8 +28,8 @@
         </div>
 
         <div class="row mb-3">
-            <div class="col-6"><strong>रसीद आईडी:</strong> #00{{ student[0] }}</div>
-            <div class="col-6 text-end"><strong>मैनुअल रसीद बुक नं.:</strong> <span class="text-danger fw-bold">{{ student[9] if student[9] else 'लगातार' }}</span></div>
+            <div class="col-6"><strong>सिस्टम रसीद आईडी:</strong> #00{{ student[0] }}</div>
+            <div class="col-6 text-end"><strong>मैनुअल रसीद बुक नं.:</strong> <span class="text-danger fw-bold">{{ student[9] if student[9] else 'नियमित' }}</span></div>
         </div>
 
         <table class="table table-bordered my-3">
