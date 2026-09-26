@@ -2,184 +2,228 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>श्री देववाणी विद्या मन्दिर, पातालश्वर, छिंदवाड़ा (म.प्र.)</title>
+    <title>श्री देववाणी विद्या मन्दिर, पतालेश्वर, छिंदवाड़ा - फीस मैनेजमेंट</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .school-logo { width: 60px; height: 60px; object-fit: cover; border-radius: 50%; border: 2px solid #fff; }
+        @media print { .no-print { display: none !important; } }
+    </style>
 </head>
-<body class="bg-light">
-    <nav class="navbar navbar-dark bg-primary px-3">
-        <span class="navbar-brand mb-0 h1">श्री देववाणी विद्या मन्दिर</span>
-        <div>
-            <a href="/reports" class="btn btn-warning btn-sm me-2">📊 सत्र-वार रिपोर्ट्स (पासवर्ड: 799)</a>
-            <a href="/logout" class="btn btn-danger btn-sm">लॉग आउट</a>
+<body>
+
+    <!-- टॉप नेवबार (स्कूल का नाम, लोगो और रिपोर्ट्स बटन) -->
+    <nav class="navbar navbar-dark bg-primary px-3 py-2 mb-3 shadow-sm">
+        <div class="d-flex align-items-center gap-3">
+            <!-- स्कूल का लोगो (मोनो) -->
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="school-logo bg-white" onerror="this.style.display='none'">
+            <div>
+                <h5 class="navbar-brand mb-0 text-white fw-bold">श्री देववाणी विद्या मन्दिर, पतालेश्वर, छिंदवाड़ा</h5>
+                <span class="text-light" style="font-size: 12px;">विद्या ददाति विनयम</span>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/reports_login" class="btn btn-warning btn-sm fw-bold no-print">सत्र-वार रिपोर्ट्स (पिन: 799)</a>
+            <a href="/logout" class="btn btn-danger btn-sm fw-bold no-print">लॉग आउट</a>
         </div>
     </nav>
 
-    <div class="container-fluid py-4">
-        <!-- पासवर्ड बदलें सेक्शन (मास्टर पिन 615971) -->
-        <div class="card mb-4 shadow-sm bg-white border-secondary">
-            <div class="card-body py-2">
-                <form action="/change_password" method="POST" class="row g-2 align-items-center">
-                    <div class="col-md-auto fw-bold text-secondary">पासवर्ड बदलें:</div>
-                    <div class="col-md-3">
-                        <input type="password" name="master_pin" class="form-control form-control-sm" placeholder="मास्टर पिन (615971)" required>
+    <div class="container-fluid px-3">
+        
+        <!-- फ्लैश मैसेज (सफलता या एरर दिखाने के लिए) -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for cat, msg in messages %}
+                    <div class="alert alert-{{ cat }} alert-dismissible fade show py-2" role="alert">
+                        {{ msg }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
-                    <div class="col-md-3">
-                        <input type="text" name="new_password" class="form-control form-control-sm" placeholder="नया पासवर्ड दर्ज करें" required>
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-dark btn-sm w-100">अपडेट करें</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-        <!-- सत्र और सर्च बार -->
-        <form method="GET" class="row g-3 mb-4">
-            <div class="col-md-3">
-                <label class="form-label">शैक्षणिक सत्र चुनें:</label>
-                <select name="session_year" class="form-select" onchange="this.form.submit()">
-                    {% for y in range(2020, 2041) %}
-                    {% set yr = y|string + '-' + (y+1)|string %}
-                    <option value="{{ yr }}" {% if selected_session == yr %}selected{% endif %}>{{ yr }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label">छात्र खोजें (Student Name Search):</label>
-                <input type="text" name="search_query" value="{{ search_query }}" class="form-control" placeholder="छात्र का नाम लिखकर खोजें...">
-            </div>
-            <div class="col-md-3 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary w-100">खोजें</button>
-            </div>
-        </form>
-
-        <!-- नया छात्र जोड़ें फॉर्म -->
-        <div class="card mb-4 shadow-sm">
-            <div class="card-header bg-success text-white">नया फीस रिकॉर्ड / पहली किस्त जोड़ें (सत्र: {{ selected_session }})</div>
-            <div class="card-body">
-                <form method="POST" class="row g-3">
-                    <input type="hidden" name="action" value="add_student">
-                    <input type="hidden" name="session_year" value="{{ selected_session }}">
-                    <div class="col-md-3">
-                        <label class="form-label">छात्र का नाम:</label>
-                        <input type="text" name="student_name" class="form-control" placeholder="पूरा नाम लिखें" required>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">कक्षा:</label>
-                        <input type="text" name="student_class" class="form-control" placeholder="कक्षा" required>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">कुल फीस (₹):</label>
-                        <input type="number" step="any" name="total_fee" class="form-control" placeholder="कुल फीस" required>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">प्रथम जमा राशि (₹):</label>
-                        <input type="number" step="any" name="paid_amount" class="form-control" placeholder="जमा राशि" required>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">छूट (₹):</label>
-                        <input type="number" step="any" name="discount" class="form-control" value="0">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">मोबाइल नंबर:</label>
-                        <input type="text" name="mobile" class="form-control" placeholder="अभिभावक का मोबाइल">
-                    </div>
-                    <div class="col-md-3 d-flex align-items-end">
-                        <button type="submit" class="btn btn-success w-100">फीस सेव करें</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- छात्र सूची टेबल -->
-        <div class="card shadow-sm">
-            <div class="card-header bg-dark text-white">फीस रिकॉर्ड सूची (सत्र: {{ selected_session }})</div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped mb-0 align-middle">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>रसीद इतिहास</th>
-                                <th>छात्र का नाम</th>
-                                <th>कक्षा</th>
-                                <th>कुल फीस</th>
-                                <th>कुल जमा</th>
-                                <th>छूट</th>
-                                <th>शेष बकाया</th>
-                                <th>मोबाइल नंबर</th>
-                                <th>अगली किस्त</th>
-                                <th>अगले सत्र में प्रमोट करें</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for student, installments in students %}
-                            {% set total_paid = student[4] %}
-                            {% set discount = student[5] %}
-                            {% set balance = student[3] - (total_paid + discount) %}
-                            <tr>
-                                <td>
-                                    <button class="btn btn-sm btn-info mb-1" type="button" data-bs-toggle="collapse" data-bs-target="#history-{{ student[0] }}">रसीद देखें</button>
-                                    <div class="collapse" id="history-{{ student[0] }}">
-                                        <div class="p-2 bg-white border rounded">
-                                            <ul class="list-unstyled mb-0 small">
-                                                {% for inst in installments %}
-                                                <li>🧾 {% if inst[4] %}{{ inst[4] }}{% else %}{{ inst[0] }}{% endif %}: ₹{{ inst[2] }} ({{ inst[3] }})</li>
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="fw-bold">{{ student[1] }}</td>
-                                <td>{{ student[2] }}</td>
-                                <td>₹{{ student[3] }}</td>
-                                <td class="text-success fw-bold">₹{{ total_paid }}</td>
-                                <td class="text-danger fw-bold">₹{{ discount }}</td>
-                                <td class="text-danger fw-bold">₹{{"%.2f"|format(balance)}}</td>
-                                <td>{{ student[6] }}</td>
-                                <td>
-                                    <form method="POST" class="row g-1">
-                                        <input type="hidden" name="action" value="add_installment">
-                                        <input type="hidden" name="student_id" value="{{ student[0] }}">
-                                        <div class="col-8">
-                                            <input type="number" step="any" name="amount" class="form-control form-control-sm" placeholder="राशि" required>
-                                        </div>
-                                        <div class="col-4">
-                                            <button type="submit" class="btn btn-success btn-sm w-100">जमा</button>
-                                        </div>
-                                    </form>
-                                </td>
-                                <td>
-                                    <!-- स्मार्ट प्रमोशन फॉर्म: पिछला बकाया नए साल की फीस में जुड़ जाएगा -->
-                                    <form action="/promote" method="POST" class="p-2 border rounded bg-warning-subtle">
-                                        <input type="hidden" name="student_id" value="{{ student[0] }}">
-                                        <input type="hidden" name="carry_balance" value="{{ balance }}">
-                                        
-                                        <input type="text" name="next_class" placeholder="अगली कक्षा" class="form-control form-control-sm mb-1" required>
-                                        
-                                        <select name="new_session" class="form-select form-select-sm mb-1" required>
-                                            <option value="">नया सत्र चुनें</option>
-                                            {% for y in range(2020, 2041) %}
-                                            {% set yr = y|string + '-' + (y+1)|string %}
-                                            <option value="{{ yr }}">{{ yr }}</option>
-                                            {% endfor %}
-                                        </select>
-                                        
-                                        <input type="number" step="any" name="new_total_fee" placeholder="नए सत्र की फीस" class="form-control form-control-sm mb-1" required>
-                                        <input type="number" step="any" name="new_discount" placeholder="छूट (Discount)" class="form-control form-control-sm mb-1" value="0">
-                                        
-                                        <div style="font-size: 10px; color: #b52a2a; font-weight: bold; margin-bottom: 2px;">पिछला बकाया: ₹{{ balance }}</div>
-                                        
-                                        <button type="submit" class="btn btn-warning btn-sm w-100">प्रमोट करें</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+        <!-- पासवर्ड बदलने का सेक्शन (मास्टर पिन मास्क किया हुआ) और खोज (Search) -->
+        <div class="card shadow-sm mb-4 p-3 no-print">
+            <form action="/update_credentials" method="POST" class="row g-3 align-items-center mb-3">
+                <div class="col-auto">
+                    <label class="col-form-label fw-bold small">पासवर्ड बदलें:</label>
                 </div>
+                <div class="col-auto">
+                    <!-- मास्टर पिन टाइप करते वक्त छिप जाएगा (Masked) -->
+                    <input type="password" name="master_pin" class="form-control form-control-sm" placeholder="मास्टर पिन (615971)" required autocomplete="off">
+                </div>
+                <div class="col-auto">
+                    <!-- नया पासवर्ड भी छिप जाएगा -->
+                    <input type="password" name="new_password" class="form-control form-control-sm" placeholder="नया पासवर्ड दर्ज करें" required autocomplete="off">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-dark btn-sm">अपडेट करें</button>
+                </div>
+            </form>
+            
+            <hr class="my-2">
+
+            <!-- खोज और सत्र फ़िल्टर -->
+            <form action="/dashboard" method="GET" class="row g-3 align-items-center">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold small">शैक्षणिक सत्र फ़िल्टर:</label>
+                    <select name="filter_session" class="form-select form-select-sm">
+                        <option value="">सभी सत्र देखें</option>
+                        {% for yr in range(2026, 2071) %}
+                            <option value="{{ yr }}-{{ yr+1 }}">{{ yr }}-{{ yr+1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small">छात्र खोजें (नाम, पिता का नाम या कक्षा):</label>
+                    <input type="text" name="search" class="form-control form-control-sm" placeholder="विवरण लिखकर खोजें...">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary btn-sm w-100">खोजें</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- नया फीस रिकॉर्ड फॉर्म (सत्र 2020 से 2070 तक का ड्रॉपडाउन) -->
+        <div class="card shadow-sm mb-4 p-3 no-print border-success">
+            <h6 class="text-success fw-bold mb-3">नया फीस रिकॉर्ड / पहली किस्त जोड़ें</h6>
+            <form action="/dashboard" method="POST" class="row g-3">
+                <input type="hidden" name="add_student" value="1">
+                
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">शैक्षणिक सत्र</label>
+                    <select name="session_year" class="form-select form-select-sm" required>
+                        {% for yr in range(2020, 2071) %}
+                            <option value="{{ yr }}-{{ yr+1 }}" {% if yr == 2026 %}selected{% endif %}>{{ yr }}-{{ yr+1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">छात्र का नाम</label>
+                    <input type="text" name="name" class="form-control form-control-sm" placeholder="छात्र का नाम" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">पिता का नाम</label>
+                    <input type="text" name="father_name" class="form-control form-control-sm" placeholder="पिता का नाम" required>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label small fw-bold">कक्षा</label>
+                    <input type="text" name="student_class" class="form-control form-control-sm" placeholder="कक्षा" required>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label small fw-bold">कुल फीस (₹)</label>
+                    <input type="number" step="any" name="total_fee" class="form-control form-control-sm" placeholder="कुल" required>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label small fw-bold">जमा राशि (₹)</label>
+                    <input type="number" step="any" name="paid_amount" class="form-control form-control-sm" placeholder="जमा" required>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label small fw-bold">छूट (₹)</label>
+                    <input type="number" step="any" name="discount" class="form-control form-control-sm" value="0">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">मैनुअल रसीद नंबर</label>
+                    <input type="text" name="manual_receipt_no" class="form-control form-control-sm" placeholder="रसीद बुक नं.">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">मोबाइल नंबर</label>
+                    <input type="text" name="mobile" class="form-control form-control-sm" placeholder="मोबाइल नंबर">
+                </div>
+                <div class="col-12 text-end">
+                    <button type="submit" class="btn btn-success btn-sm px-4 fw-bold">फीस सेव करें</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- फीस रिकॉर्ड सूची टेबल (1000+ बच्चों के लिए समर्थित) -->
+        <div class="card shadow-sm p-3">
+            <h6 class="fw-bold mb-3">छात्र फीस रिकॉर्ड सूची</h6>
+            <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
+                <table class="table table-bordered table-striped align-middle small">
+                    <thead class="table-dark sticky-top">
+                        <tr>
+                            <th>रसीद</th>
+                            <th>सत्र</th>
+                            <th>छात्र का नाम</th>
+                            <th>पिता का नाम</th>
+                            <th>कक्षा</th>
+                            <th>कुल फीस</th>
+                            <th>कुल जमा</th>
+                            <th>छूट</th>
+                            <th>शेष बकाया</th>
+                            <th>मैनुअल रसीद नं.</th>
+                            <th>मोबाइल</th>
+                            <th class="no-print">अगली किस्त</th>
+                            <th class="no-print">अगले सत्र में प्रमोट</th>
+                            <th class="no-print text-center">हटाएं</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in students %}
+                        {% set balance = row[4] - (row[5] + row[6]) %}
+                        <tr>
+                            <td class="no-print">
+                                <a href="/receipt/{{ row[0] }}" target="_blank" class="btn btn-primary btn-sm py-0 px-2">रसीद</a>
+                            </td>
+                            <td><span class="badge bg-secondary">{{ row[8] }}</span></td>
+                            <td class="fw-bold">{{ row[1] }}</td>
+                            <td>{{ row[2] }}</td>
+                            <td>{{ row[3] }}</td>
+                            <td>₹{{ row[4] }}</td>
+                            <td class="text-success fw-bold">₹{{ row[5] }}</td>
+                            <td class="text-danger">₹{{ row[6] }}</td>
+                            <td class="fw-bold text-dark bg-warning">₹{{ balance }}</td>
+                            <td><span class="badge bg-info text-dark">{{ row[9] if row[9] else '-' }}</span></td>
+                            <td>{{ row[7] }}</td>
+                            
+                            <!-- अगली किस्त फॉर्म (मैनुअल रसीद नंबर के साथ) -->
+                            <td class="no-print">
+                                <form action="/dashboard" method="POST" class="d-flex gap-1">
+                                    <input type="hidden" name="update_installment" value="1">
+                                    <input type="hidden" name="student_id" value="{{ row[0] }}">
+                                    <input type="number" step="any" name="extra_pay" class="form-control form-control-sm" placeholder="राशि" style="width: 65px;" required>
+                                    <input type="text" name="manual_receipt_no" class="form-control form-control-sm" placeholder="रसीद नं." style="width: 65px;" required>
+                                    <button type="submit" class="btn btn-success btn-sm py-0 px-2">जमा</button>
+                                </form>
+                            </td>
+
+                            <!-- प्रमोट फॉर्म (पिछला बकाया और नए सत्र की फीस अलग-अलग रखने वाला) -->
+                            <td class="no-print">
+                                <form action="/dashboard" method="POST" class="d-flex flex-column gap-1">
+                                    <input type="hidden" name="promote_student" value="1">
+                                    <input type="hidden" name="student_id" value="{{ row[0] }}">
+                                    <input type="text" name="next_class" class="form-control form-control-sm py-0" placeholder="अगली कक्षा" required>
+                                    <select name="next_session" class="form-select form-select-sm py-0">
+                                        {% for yr in range(2020, 2071) %}
+                                            <option value="{{ yr }}-{{ yr+1 }}">{{ yr }}-{{ yr+1 }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <input type="number" step="any" name="new_total_fee" class="form-control form-control-sm py-0" placeholder="नए सत्र की फीस" required>
+                                    <div class="text-danger fw-bold" style="font-size: 10px;">पिछला बकाया: ₹{{ balance }} (अलग से जुड़ेगा)</div>
+                                    <button type="submit" class="btn btn-warning btn-sm py-0 mt-1 fw-bold">प्रमोट करें</button>
+                                </form>
+                            </td>
+
+                            <!-- छात्र हटाने का विकल्प (Delete) -->
+                            <td class="no-print text-center">
+                                <form action="/dashboard" method="POST" onsubmit="return confirm('क्या आप वाकई इस छात्र का रिकॉर्ड हटाना चाहते हैं?');">
+                                    <input type="hidden" name="delete_student" value="1">
+                                    <input type="hidden" name="student_id" value="{{ row[0] }}">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm py-0 px-1">✕</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="14" class="text-center text-muted py-3">कोई रिकॉर्ड नहीं मिला।</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
+
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
