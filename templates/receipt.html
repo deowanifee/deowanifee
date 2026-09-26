@@ -2,78 +2,81 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>फीस रसीद - श्री देववाणी विद्या मन्दिर</title>
+    <title>फीस रसीद - श्री देववाणी विद्या मन्दिर, पतालेश्वर, छिंदवाड़ा</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        @media print {
-            .no-print { display: none; }
-        }
+        body { background: #fff; font-family: sans-serif; }
+        .receipt-box { max-width: 650px; margin: 30px auto; border: 2px solid #333; padding: 25px; border-radius: 8px; }
+        .school-logo-receipt { width: 70px; height: 70px; object-fit: cover; border-radius: 50%; }
+        @media print { .no-print { display: none !important; } }
     </style>
 </head>
-<body class="bg-white py-5">
-    <div class="container" style="max-width: 700px;">
-        <div class="card border-dark p-4 shadow-sm">
-            <div class="text-center border-bottom pb-3 mb-3">
-                <h3 class="fw-bold text-primary mb-1">श्री देववाणी विद्या मन्दिर</h3>
-                <p class="mb-0 text-muted">पातालश्वर, छिंदवाड़ा (म.प्र.)</p>
-                <h5 class="mt-3 text-dark bg-light py-2 border rounded">फीस जमा रसीद (Fee Receipt)</h5>
+<body>
+    <div class="receipt-box shadow-sm">
+        <!-- रसीद का शीर्ष (स्कूल का नाम, लोगो और मैनुअल रसीद नंबर) -->
+        <div class="d-flex align-items-center justify-content-between border-bottom pb-3 mb-3">
+            <div>
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="school-logo-receipt bg-light border" onerror="this.style.display='none'">
             </div>
-
-            <div class="row mb-3">
-                <div class="col-6">
-                    <p class="mb-1"><b>छात्र का नाम:</b> {{ student[1] }}</p>
-                    <p class="mb-1"><b>कक्षा:</b> {{ student[2] }}</p>
-                </div>
-                <div class="col-6 text-end">
-                    <p class="mb-1"><b>शैक्षणिक सत्र:</b> {{ student[7] }}</p>
-                    <p class="mb-1"><b>मोबाइल नंबर:</b> {{ student[6] }}</p>
-                </div>
+            <div class="text-center flex-grow-1">
+                <h4 class="fw-bold mb-0 text-primary">श्री देववाणी विद्या मन्दिर, पतालेश्वर, छिंदवाड़ा</h4>
+                <p class="mb-0 text-muted small">विद्या ददाति विनयम | फीस भुगतान रसीद</p>
             </div>
-
-            <table class="table table-bordered border-dark">
-                <thead class="table-light">
-                    <tr>
-                        <th>क्र.</th>
-                        <th>रसीद क्रमांक</th>
-                        <th>दिनांक और समय</th>
-                        <th>जमा राशि (₹)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for inst in installments %}
-                    <tr>
-                        <td>{{ loop.index }}</td>
-                        <td><b>{{ inst[2] }}</b></td>
-                        <td>{{ inst[4] }}</td>
-                        <td class="fw-bold text-success">₹{{ inst[3] }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-
-            <div class="row mt-3 border-top pt-3">
-                <div class="col-6">
-                    <p class="mb-1"><b>कुल निर्धारित फीस:</b> ₹{{ student[3] }}</p>
-                    <p class="mb-1"><b>कुल छूट:</b> ₹{{ student[5] }}</p>
-                </div>
-                <div class="col-6 text-end">
-                    <p class="mb-1 text-success"><b>कुल जमा राशि:</b> ₹{{ student[4] }}</p>
-                    <p class="mb-1 text-danger"><b>शेष बकाया राशि:</b> ₹{{ student[3] - student[4] - student[5] }}</p>
-                </div>
+            <div class="text-end">
+                <span class="badge bg-dark">सत्र: {{ student[8] }}</span>
             </div>
+        </div>
 
-            <div class="d-flex justify-content-between align-items-center mt-5 pt-4 border-top">
-                <div class="text-muted small">
-                    <p class="mb-0">अधिकृत हस्ताक्षरकर्ता</p>
-                    <p class="mb-0">श्री देववाणी विद्या मन्दिर</p>
-                </div>
-                <div class="no-print">
-                    <a href="https://api.whatsapp.com/send?phone=91{{ student[6] }}&text=Namaste,%20Shri%20Devvani%20Vidya%20Mandir%20Pataleshwar,%20Chhindwara.%20Aapke%20bachche%20{{ student[1] }}%20(Kaksha%20{{ student[2] }})%20ki%20fees%20jama%20ho%20gayi%20hai.%20Kul%20Jama:%20Rs.%20{{ student[4] }},%20Shesh%20Baki:%20Rs.%20{{ student[3] - student[4] - student[5] }}." target="_blank" class="btn btn-success btn-sm">💬 WhatsApp पर भेजें</a>
-                    <button onclick="window.print()" class="btn btn-primary btn-sm">🖨️ प्रिंट करें</button>
-                    <a href="/dashboard" class="btn btn-secondary btn-sm">वापस जाएं</a>
-                </div>
-            </div>
+        <div class="row mb-3">
+            <div class="col-6"><strong>रसीद आईडी:</strong> #00{{ student[0] }}</div>
+            <div class="col-6 text-end"><strong>मैनुअल रसीद बुक नं.:</strong> <span class="text-danger fw-bold">{{ student[9] if student[9] else 'लगातार' }}</span></div>
+        </div>
+
+        <table class="table table-bordered my-3">
+            <tr>
+                <th style="width: 35%;">छात्र का नाम:</th>
+                <td class="fw-bold">{{ student[1] }}</td>
+            </tr>
+            <tr>
+                <th>पिता का नाम:</th>
+                <td>{{ student[2] }}</td>
+            </tr>
+            <tr>
+                <th>कक्षा:</th>
+                <td>{{ student[3] }}</td>
+            </tr>
+            <tr>
+                <th>मोबाइल नंबर:</th>
+                <td>{{ student[7] if student[7] else '-' }}</td>
+            </tr>
+            <tr>
+                <th>कुल निर्धारित फीस:</th>
+                <td>₹{{ student[4] }}</td>
+            </tr>
+            <tr>
+                <th>कुल जमा राशि (Paid):</th>
+                <td class="text-success fw-bold">₹{{ student[5] }}</td>
+            </tr>
+            <tr>
+                <th>छूट (Discount):</th>
+                <td class="text-danger">₹{{ student[6] }}</td>
+            </tr>
+            <tr>
+                <th>शेष बकाया (Balance):</th>
+                <td class="text-danger fw-bold">₹{{ student[4] - (student[5] + student[6]) }}</td>
+            </tr>
+        </table>
+
+        <div class="d-flex justify-content-between mt-5 pt-3 border-top">
+            <div class="small text-muted">हस्ताक्षर (अकाउंटेंट / लिपिक)</div>
+            <div class="small text-muted">स्कूल की सील / मुहर</div>
+        </div>
+
+        <!-- प्रिंट और व्हाट्सएप शेयरिंग बटन -->
+        <div class="text-center mt-4 no-print d-flex justify-content-center gap-2">
+            <button onclick="window.print()" class="btn btn-primary btn-sm px-4 fw-bold">रसीद प्रिंट करें</button>
+            <a href="https://api.whatsapp.com/send?phone=91{{ student[7] }}&text=प्रिय अभिभावक, श्री देववाणी विद्या मन्दिर, पतालेश्वर, छिंदवाड़ा की ओर से आपके बच्चे {{ student[1] }} (कक्षा: {{ student[3] }}) की फीस रसीद। कुल जमा: ₹{{ student[5] }}, शेष बकाया: ₹{{ student[4] - (student[5] + student[6]) }}" target="_blank" class="btn btn-success btn-sm px-3 fw-bold">व्हाट्सएप पर भेजें</a>
+            <a href="/dashboard" class="btn btn-secondary btn-sm px-3">डैशबोर्ड पर वापस जाएं</a>
         </div>
     </div>
 </body>
