@@ -16,7 +16,8 @@ def init_db():
             name TEXT NOT NULL,
             father_name TEXT NOT NULL,
             student_class TEXT NOT NULL,
-            total_fee REAL NOT NULL,
+            current_fee REAL NOT NULL,
+            previous_due REAL DEFAULT 0.0,
             paid_amount REAL NOT NULL,
             discount REAL NOT NULL,
             mobile TEXT,
@@ -74,7 +75,8 @@ def dashboard():
             name = request.form.get('name')
             father_name = request.form.get('father_name')
             student_class = request.form.get('student_class')
-            total_fee = float(request.form.get('total_fee'))
+            current_fee = float(request.form.get('current_fee'))
+            previous_due = float(request.form.get('previous_due', 0))
             paid_amount = float(request.form.get('paid_amount'))
             discount = float(request.form.get('discount', 0))
             mobile = request.form.get('mobile')
@@ -82,9 +84,9 @@ def dashboard():
             manual_receipt_no = request.form.get('manual_receipt_no')
             
             cursor.execute('''
-                INSERT INTO students (name, father_name, student_class, total_fee, paid_amount, discount, mobile, session_year, manual_receipt_no)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (name, father_name, student_class, total_fee, paid_amount, discount, mobile, session_year, manual_receipt_no))
+                INSERT INTO students (name, father_name, student_class, current_fee, previous_due, paid_amount, discount, mobile, session_year, manual_receipt_no)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (name, father_name, student_class, current_fee, previous_due, paid_amount, discount, mobile, session_year, manual_receipt_no))
             conn.commit()
             flash('नया फीस रिकॉर्ड सफलतापूर्वक जोड़ दिया गया है!', 'success')
             
@@ -105,36 +107,35 @@ def dashboard():
             student_id = request.form.get('student_id')
             next_class = request.form.get('next_class')
             next_session = request.form.get('next_session')
-            new_total_fee = float(request.form.get('new_total_fee'))
+            new_current_fee = float(request.form.get('new_current_fee'))
             
-            cursor.execute('SELECT name, father_name, mobile, total_fee, paid_amount, discount FROM students WHERE id = ?', (student_id,))
+            cursor.execute('SELECT name, father_name, mobile, current_fee, previous_due, paid_amount, discount FROM students WHERE id = ?', (student_id,))
             old_data = cursor.fetchone()
             
             if old_data:
-                name, father_name, mobile, old_total, old_paid, old_discount = old_data
-                old_balance = old_total - (old_paid + old_discount)
-                
-                final_total_fee = new_total_fee + old_balance
+                name, father_name, mobile, o_curr, o_prev, o_paid, o_disc = old_data
+                old_total_payable = o_curr + o_prev
+                old_balance = old_total_payable - (o_paid + o_disc)
                 
                 cursor.execute('''
-                    INSERT INTO students (name, father_name, student_class, total_fee, paid_amount, discount, mobile, session_year, manual_receipt_no)
-                    VALUES (?, ?, ?, ?, 0.0, 0.0, ?, ?, '')
-                ''', (name, father_name, next_class, final_total_fee, mobile, next_session))
+                    INSERT INTO students (name, father_name, student_class, current_fee, previous_due, paid_amount, discount, mobile, session_year, manual_receipt_no)
+                    VALUES (?, ?, ?, ?, ?, 0.0, 0.0, ?, ?, '')
+                ''', (name, father_name, next_class, new_current_fee, old_balance, mobile, next_session))
                 conn.commit()
-                flash(f'छात्र को अगले सत्र में प्रमोट कर दिया गया है! पिछला बकाया (₹{old_balance}) नए सत्र की फीस में जोड़ दिया गया है।', 'success')
+                flash(f'छात्र प्रमोट हो गया! नए सत्र की फीस ₹{new_current_fee} और पिछला बकाया ₹{old_balance} अलग-अलग दर्ज हो गया है।', 'success')
                 
         elif 'delete_student' in request.form:
             student_id = request.form.get('student_id')
             cursor.execute('DELETE FROM students WHERE id = ?', (student_id,))
             conn.commit()
-            flash('छात्र का रिकॉर्ड सफलतापूर्वक हटा दिया गया है!', 'warning')
+            flash('रिकॉर्ड हटा दिया गया है!', 'warning')
             
         return redirect(url_for('dashboard'))
         
     filter_session = request.args.get('filter_session')
     search_query = request.args.get('search')
     
-    query = 'SELECT id, name, father_name, student_class, total_fee, paid_amount, discount, mobile, session_year, manual_receipt_no FROM students WHERE 1=1'
+    query = 'SELECT id, name, father_name, student_class, current_fee, previous_due, paid_amount, discount, mobile, session_year, manual_receipt_no FROM students WHERE 1=1'
     params = []
     
     if filter_session:
@@ -168,9 +169,9 @@ def update_credentials():
     if row and row[0] == master_pin:
         cursor.execute('UPDATE settings SET password = ? WHERE id = 1', (new_password,))
         conn.commit()
-        flash('पासवर्ड सफलतापूर्वक अपडेट कर दिया गया है!', 'success')
+        flash('पासवर्ड अपडेट हो गया है!', 'success')
     else:
-        flash('गलत मास्टर पिन! पासवर्ड अपडेट नहीं हुआ।', 'danger')
+        flash('गलत मास्टर पिन!', 'danger')
     conn.close()
     return redirect(url_for('dashboard'))
 
@@ -197,13 +198,13 @@ def reports():
     cursor = conn.cursor()
     
     cursor.execute('''
-        SELECT session_year, COUNT(id), SUM(total_fee), SUM(paid_amount), SUM(discount)
+        SELECT session_year, COUNT(id), SUM(current_fee + previous_due), SUM(paid_amount), SUM(discount)
         FROM students GROUP BY session_year ORDER BY session_year DESC
     ''')
     report_data = cursor.fetchall()
     
     cursor.execute('''
-        SELECT COUNT(id), SUM(total_fee), SUM(paid_amount), SUM(discount) FROM students
+        SELECT COUNT(id), SUM(current_fee + previous_due), SUM(paid_amount), SUM(discount) FROM students
     ''')
     grand_total = cursor.fetchone()
     conn.close()
@@ -217,12 +218,12 @@ def receipt(student_id):
         
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
-    cursor.execute('SELECT id, name, father_name, student_class, total_fee, paid_amount, discount, mobile, session_year, manual_receipt_no FROM students WHERE id = ?', (student_id,))
+    cursor.execute('SELECT id, name, father_name, student_class, current_fee, previous_due, paid_amount, discount, mobile, session_year, manual_receipt_no FROM students WHERE id = ?', (student_id,))
     student = cursor.fetchone()
     conn.close()
     
     if not student:
-        flash('रसीद का डेटा नहीं मिला।', 'danger')
+        flash('रसीद नहीं मिली।', 'danger')
         return redirect(url_for('dashboard'))
         
     return render_template('receipt.html', student=student)
