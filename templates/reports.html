@@ -2,35 +2,66 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <title>सत्र-वार रिपोर्ट्स - श्री देववाणी विद्या मन्दिर</title>
+    <title>सत्र-वार रिपोर्ट्स - श्री देववाणी विद्या मन्दिर, पतालेश्वर, छिंदवाड़ा</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-light p-4">
     <div class="container">
-        <h2>सत्र-वार फीस और कलेक्शन रिपोर्ट</h2>
-        <a href="/dashboard" class="btn btn-primary mb-3">← डैशबोर्ड पर वापस जाएं</a>
-        <table class="table table-bordered table-striped bg-white shadow-sm">
-            <thead class="table-dark">
-                <tr>
-                    <th>शैक्षणिक सत्र</th>
-                    <th>कुल निर्धारित फीस</th>
-                    <th>कुल प्राप्त फीस (Collected)</th>
-                    <th>कुल छूट (Discount)</th>
-                    <th>कुल शेष बकाया (Balance)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in summary %}
-                <tr>
-                    <td class="fw-bold">{{ row[0] }}</td>
-                    <td>₹{{ row[1] }}</td>
-                    <td class="text-success fw-bold">₹{{ row[2] }}</td>
-                    <td class="text-danger">₹{{ row[3] }}</td>
-                    <td class="text-danger fw-bold">₹{{ row[1] - (row[2] + row[3]) }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h4 class="text-primary fw-bold mb-0">श्री देववाणी विद्या मन्दिर, पतालेश्वर, छिंदवाड़ा</h4>
+                <p class="text-muted small">सत्र-वार वित्तीय रिपोर्ट्स एवं कुल योग (Grand Total)</p>
+            </div>
+            <a href="/dashboard" class="btn btn-secondary btn-sm fw-bold">डैशबोर्ड पर वापस जाएं</a>
+        </div>
+
+        <div class="card shadow p-3">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>शैक्षणिक सत्र</th>
+                            <th>कुल छात्रों की संख्या</th>
+                            <th>कुल निर्धारित फीस</th>
+                            <th>कुल जमा राशि</th>
+                            <th>कुल छूट</th>
+                            <th>कुल शेष बकाया</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in report_data %}
+                        <tr>
+                            <td class="fw-bold">{{ row[0] }}</td>
+                            <td>{{ row[1] }} छात्र</td>
+                            <td>₹{{ row[2] }}</td>
+                            <td class="text-success fw-bold">₹{{ row[3] }}</td>
+                            <td class="text-danger">₹{{ row[4] }}</td>
+                            <td class="fw-bold text-warning bg-dark">₹{{ row[2] - (row[3] + row[4]) }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-3">कोई डेटा उपलब्ध नहीं है।</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    
+                    <!-- ग्रैंड टोटल (Grand Total) सेक्शन -->
+                    {% if grand_total and grand_total[0] > 0 %}
+                    <tfoot class="table-secondary fw-bold">
+                        <tr>
+                            <td>ग्रैंड टोटल (सभी सत्रों का कुल योग)</td>
+                            <td>{{ grand_total[0] }} कुल रिकॉर्ड</td>
+                            <td>₹{{ grand_total[1] }}</td>
+                            <td class="text-success">₹{{ grand_total[2] }}</td>
+                            <td class="text-danger">₹{{ grand_total[3] }}</td>
+                            <td class="text-dark">₹{{ grand_total[1] - (grand_total[2] + grand_total[3]) }}</td>
+                        </tr>
+                    </tfoot>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
