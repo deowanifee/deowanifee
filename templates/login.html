@@ -1,30 +1,33 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>श्री देववाणी विद्या मन्दिर - Login</title>
+    <meta charset="UTF-8">
+    <title>लॉगिन - श्री देववाणी विद्या मन्दिर, पतालेश्वर, छिंदवाड़ा</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="bg-light d-flex align-items-center justify-content-center" style="height: 100vh;">
-    <div class="card p-4 shadow" style="width: 100%; max-width: 400px;">
-        <h4 class="text-center text-primary mb-1">श्री देववाणी विद्या मन्दिर</h4>
-        <p class="text-center text-muted small mb-3">पातालश्वर, छिंदवाड़ा (म.प्र.)</p>
+<body class="bg-light d-flex justify-content-center align-items-center vh-100">
+    <div class="card shadow p-4 text-center" style="width: 380px;">
+        <!-- स्कूल का नाम और लोगो इंडिकेशन -->
+        <h5 class="text-primary fw-bold mb-1">श्री देववाणी विद्या मन्दिर</h5>
+        <p class="text-muted small mb-3">पतालेश्वर, छिंदवाड़ा</p>
         
-        {% if error %}
-            <div class="alert alert-danger p-2 small">{{ error }}</div>
-        {% endif %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for cat, msg in messages %}
+                    <div class="alert alert-{{ cat }} py-2 small">{{ msg }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
         <form method="POST">
-            <div class="mb-3">
-                <label class="form-label">Username</label>
-                <input type="text" name="username" class="form-control" required placeholder="">
+            <div class="mb-3 text-start">
+                <label class="form-label small fw-bold">पासवर्ड दर्ज करें (डिफ़ॉल्ट: 8109)</label>
+                <!-- पासवर्ड टाइप करते वक्त अक्षर छुपेंगे (Masked) -->
+                <input type="password" name="password" class="form-control" placeholder="••••" required autocomplete="off">
             </div>
-            <div class="mb-3">
-                <label class="form-label">Password</label>
-                <input type="password" name="password" class="form-control" required placeholder="">
-            </div>
-            <button type="submit" class="btn btn-primary w-100">Login</button>
+            <button type="submit" class="btn btn-primary w-100 fw-bold">लॉग इन करें</button>
         </form>
     </div>
 </body>
 </html>
+
