@@ -6,20 +6,21 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f8f9fa; }
-        .school-logo { width: 60px; height: 60px; object-fit: cover; border-radius: 50%; border: 2px solid #fff; }
+        .school-logo { width: 65px; height: 65px; object-fit: cover; border-radius: 50%; border: 2px solid #fff; }
+        .promote-box { background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; border-radius: 5px; min-width: 250px; }
         @media print { .no-print { display: none !important; } }
     </style>
 </head>
 <body>
 
-    <!-- टॉप नेवबार (स्कूल का नाम, लोगो और रिपोर्ट्स बटन) -->
+    <!-- टॉप नेवबार (स्कूल का नाम, सही लोगो और रिपोर्ट्स बटन) -->
     <nav class="navbar navbar-dark bg-primary px-3 py-2 mb-3 shadow-sm">
         <div class="d-flex align-items-center gap-3">
-            <!-- स्कूल का लोगो (मोनो) -->
+            <!-- स्कूल का लोगो (सीधे root से logo.png) -->
             <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="school-logo bg-white" onerror="this.style.display='none'">
             <div>
-                <h5 class="navbar-brand mb-0 text-white fw-bold">श्री देववाणी विद्या मन्दिर, पतालेश्वर, छिंदवाड़ा</h5>
-                <span class="text-light" style="font-size: 12px;">विद्या ददाति विनयम</span>
+                <h4 class="navbar-brand mb-0 text-white fw-bold">श्री देववाणी विद्या मन्दिर, पतालेश्वर, छिंदवाड़ा</h4>
+                <span class="text-light" style="font-size: 13px;">विद्या ददाति विनयम</span>
             </div>
         </div>
         <div class="d-flex gap-2">
@@ -30,7 +31,7 @@
 
     <div class="container-fluid px-3">
         
-        <!-- फ्लैश मैसेज (सफलता या एरर दिखाने के लिए) -->
+        <!-- फ्लैश मैसेज -->
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for cat, msg in messages %}
@@ -42,18 +43,16 @@
             {% endif %}
         {% endwith %}
 
-        <!-- पासवर्ड बदलने का सेक्शन (मास्टर पिन मास्क किया हुआ) और खोज (Search) -->
+        <!-- पासवर्ड बदलने का सेक्शन (मास्टर पिन और नया पासवर्ड छिपा हुआ) और खोज -->
         <div class="card shadow-sm mb-4 p-3 no-print">
             <form action="/update_credentials" method="POST" class="row g-3 align-items-center mb-3">
                 <div class="col-auto">
                     <label class="col-form-label fw-bold small">पासवर्ड बदलें:</label>
                 </div>
                 <div class="col-auto">
-                    <!-- मास्टर पिन टाइप करते वक्त छिप जाएगा (Masked) -->
-                    <input type="password" name="master_pin" class="form-control form-control-sm" placeholder="मास्टर पिन (615971)" required autocomplete="off">
+                    <input type="password" name="master_pin" class="form-control form-control-sm" placeholder="मास्टर पिन दर्ज करें" required autocomplete="off">
                 </div>
                 <div class="col-auto">
-                    <!-- नया पासवर्ड भी छिप जाएगा -->
                     <input type="password" name="new_password" class="form-control form-control-sm" placeholder="नया पासवर्ड दर्ज करें" required autocomplete="off">
                 </div>
                 <div class="col-auto">
@@ -84,7 +83,7 @@
             </form>
         </div>
 
-        <!-- नया फीस रिकॉर्ड फॉर्म (सत्र 2020 से 2070 तक का ड्रॉपडाउन) -->
+        <!-- नया फीस रिकॉर्ड फॉर्म (सत्र 2020 से 2070 तक) -->
         <div class="card shadow-sm mb-4 p-3 no-print border-success">
             <h6 class="text-success fw-bold mb-3">नया फीस रिकॉर्ड / पहली किस्त जोड़ें</h6>
             <form action="/dashboard" method="POST" class="row g-3">
@@ -136,7 +135,7 @@
             </form>
         </div>
 
-        <!-- फीस रिकॉर्ड सूची टेबल (1000+ बच्चों के लिए समर्थित) -->
+        <!-- फीस रिकॉर्ड सूची टेबल -->
         <div class="card shadow-sm p-3">
             <h6 class="fw-bold mb-3">छात्र फीस रिकॉर्ड सूची</h6>
             <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
@@ -155,7 +154,7 @@
                             <th>मैनुअल रसीद नं.</th>
                             <th>मोबाइल</th>
                             <th class="no-print">अगली किस्त</th>
-                            <th class="no-print">अगले सत्र में प्रमोट</th>
+                            <th class="no-print">अगले सत्र में प्रमोट (बकाया सहित)</th>
                             <th class="no-print text-center">हटाएं</th>
                         </tr>
                     </thead>
@@ -177,7 +176,7 @@
                             <td><span class="badge bg-info text-dark">{{ row[9] if row[9] else '-' }}</span></td>
                             <td>{{ row[7] }}</td>
                             
-                            <!-- अगली किस्त फॉर्म (मैनुअल रसीद नंबर के साथ) -->
+                            <!-- अगली किस्त फॉर्म -->
                             <td class="no-print">
                                 <form action="/dashboard" method="POST" class="d-flex gap-1">
                                     <input type="hidden" name="update_installment" value="1">
@@ -188,24 +187,42 @@
                                 </form>
                             </td>
 
-                            <!-- प्रमोट फॉर्म (पिछला बकाया और नए सत्र की फीस अलग-अलग रखने वाला) -->
+                            <!-- प्रमोट फॉर्म (स्पष्ट और खुला हुआ डिज़ाइन) -->
                             <td class="no-print">
-                                <form action="/dashboard" method="POST" class="d-flex flex-column gap-1">
-                                    <input type="hidden" name="promote_student" value="1">
-                                    <input type="hidden" name="student_id" value="{{ row[0] }}">
-                                    <input type="text" name="next_class" class="form-control form-control-sm py-0" placeholder="अगली कक्षा" required>
-                                    <select name="next_session" class="form-select form-select-sm py-0">
-                                        {% for yr in range(2020, 2071) %}
-                                            <option value="{{ yr }}-{{ yr+1 }}">{{ yr }}-{{ yr+1 }}</option>
-                                        {% endfor %}
-                                    </select>
-                                    <input type="number" step="any" name="new_total_fee" class="form-control form-control-sm py-0" placeholder="नए सत्र की फीस" required>
-                                    <div class="text-danger fw-bold" style="font-size: 10px;">पिछला बकाया: ₹{{ balance }} (अलग से जुड़ेगा)</div>
-                                    <button type="submit" class="btn btn-warning btn-sm py-0 mt-1 fw-bold">प्रमोट करें</button>
-                                </form>
+                                <div class="promote-box">
+                                    <form action="/dashboard" method="POST" class="d-flex flex-column gap-2">
+                                        <input type="hidden" name="promote_student" value="1">
+                                        <input type="hidden" name="student_id" value="{{ row[0] }}">
+                                        
+                                        <div>
+                                            <label class="form-label fw-bold text-dark mb-0" style="font-size: 11px;">अगली कक्षा:</label>
+                                            <input type="text" name="next_class" class="form-control form-control-sm" placeholder="जैसे: कक्षा 6वीं" required>
+                                        </div>
+
+                                        <div>
+                                            <label class="form-label fw-bold text-dark mb-0" style="font-size: 11px;">नया शैक्षणिक सत्र:</label>
+                                            <select name="next_session" class="form-select form-select-sm">
+                                                {% for yr in range(2020, 2071) %}
+                                                    <option value="{{ yr }}-{{ yr+1 }}" {% if yr == 2026 %}selected{% endif %}>{{ yr }}-{{ yr+1 }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label class="form-label fw-bold text-dark mb-0" style="font-size: 11px;">नए सत्र की मूल फीस (₹):</label>
+                                            <input type="number" step="any" name="new_total_fee" class="form-control form-control-sm" placeholder="नए सत्र की फीस" required>
+                                        </div>
+
+                                        <div class="bg-white p-1 rounded border text-danger fw-bold text-center" style="font-size: 11px;">
+                                            पिछला बकाया: ₹{{ balance }} <br>(नए सत्र में स्वतः जुड़ेगा)
+                                        </div>
+
+                                        <button type="submit" class="btn btn-warning btn-sm fw-bold w-100">सत्र प्रमोट करें</button>
+                                    </form>
+                                </div>
                             </td>
 
-                            <!-- छात्र हटाने का विकल्प (Delete) -->
+                            <!-- छात्र हटाने का विकल्प -->
                             <td class="no-print text-center">
                                 <form action="/dashboard" method="POST" onsubmit="return confirm('क्या आप वाकई इस छात्र का रिकॉर्ड हटाना चाहते हैं?');">
                                     <input type="hidden" name="delete_student" value="1">
